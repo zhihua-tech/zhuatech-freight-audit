@@ -1,0 +1,36 @@
+{
+  "company": "上海如静知华信息科技有限公司",
+  "website": "https://www.zhuatech.cn/",
+  "date": "2026-09-05",
+  "project": "zhuatech-freight-audit",
+  "backend": {
+    "project": "freight-audit",
+    "tests": 43,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 8.456,
+    "database": "MySQL 8.4"
+  },
+  "frontend": {
+    "unitTests": 6,
+    "failures": 0,
+    "build": "passed",
+    "npmAuditKnownVulnerabilities": 0
+  },
+  "browser": {
+    "project": "freight-audit",
+    "login": true,
+    "create": true,
+    "reloadPersistence": true,
+    "detail": true,
+    "admin": true,
+    "audit": true,
+    "mobile": true,
+    "pageErrors": 0,
+    "consoleErrors": 0
+  },
+  "businessSteps": 31,
+  "coreModules": 5,
+  "productionCertified": false
+}

@@ -1,0 +1,429 @@
+{
+  "slug": "freight-audit",
+  "pkg": "freightaudit",
+  "name": "知华运费审计对账",
+  "subtitle": "运单、合约运价、账单差异与付款核销",
+  "accent": "#3d6488",
+  "modules": [
+    {
+      "key": "carriers",
+      "label": "承运商",
+      "description": "承运商联系与结算资料",
+      "initial": "ACTIVE",
+      "editable": true,
+      "creatable": true,
+      "fields": [
+        {
+          "key": "name",
+          "label": "承运商名称",
+          "type": "text",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "contact",
+          "label": "联系人",
+          "type": "text",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        }
+      ],
+      "actions": []
+    },
+    {
+      "key": "tariffs",
+      "label": "运输价卡",
+      "description": "按线路、生效日期与重量计算运费",
+      "initial": "DRAFT",
+      "editable": true,
+      "creatable": true,
+      "fields": [
+        {
+          "key": "carrier",
+          "label": "承运商",
+          "type": "ref",
+          "required": true,
+          "ref": "carriers",
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "lane",
+          "label": "线路代码",
+          "type": "text",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "start",
+          "label": "开始日期",
+          "type": "date",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "end",
+          "label": "结束日期",
+          "type": "date",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "base",
+          "label": "起步运费",
+          "type": "money",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": "0",
+          "max": "999999999"
+        },
+        {
+          "key": "perKg",
+          "label": "每公斤运费",
+          "type": "money",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": "0",
+          "max": "999999999"
+        },
+        {
+          "key": "fuelRate",
+          "label": "燃油附加率 %",
+          "type": "number",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": "0",
+          "max": "100"
+        },
+        {
+          "key": "tolerance",
+          "label": "容差金额",
+          "type": "money",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": "0",
+          "max": "999999999"
+        }
+      ],
+      "actions": [
+        {
+          "key": "approve",
+          "label": "审批生效",
+          "from": [
+            "DRAFT"
+          ],
+          "to": "ACTIVE",
+          "role": "REVIEWER",
+          "separate": true,
+          "fields": []
+        }
+      ]
+    },
+    {
+      "key": "shipments",
+      "label": "运输运单",
+      "description": "计费重量与妥投凭证",
+      "initial": "DRAFT",
+      "editable": true,
+      "creatable": true,
+      "fields": [
+        {
+          "key": "carrier",
+          "label": "承运商",
+          "type": "ref",
+          "required": true,
+          "ref": "carriers",
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "lane",
+          "label": "线路代码",
+          "type": "text",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "weight",
+          "label": "计费重量 kg",
+          "type": "number",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": "0.0001",
+          "max": "999999999"
+        },
+        {
+          "key": "shippedAt",
+          "label": "发运日期",
+          "type": "date",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "consignee",
+          "label": "收货人",
+          "type": "text",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        }
+      ],
+      "actions": [
+        {
+          "key": "dispatch",
+          "label": "确认发运",
+          "from": [
+            "DRAFT"
+          ],
+          "to": "IN_TRANSIT",
+          "role": "OPERATOR",
+          "separate": false,
+          "fields": []
+        },
+        {
+          "key": "deliver",
+          "label": "登记妥投",
+          "from": [
+            "IN_TRANSIT"
+          ],
+          "to": "DELIVERED",
+          "role": "OPERATOR",
+          "separate": false,
+          "fields": [
+            {
+              "key": "pod",
+              "label": "签收凭证号",
+              "type": "text",
+              "required": true,
+              "ref": null,
+              "options": [],
+              "min": null,
+              "max": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "invoices",
+      "label": "承运商账单",
+      "description": "自动计算应付、超差争议与调整",
+      "initial": "DRAFT",
+      "editable": true,
+      "creatable": true,
+      "fields": [
+        {
+          "key": "shipment",
+          "label": "运单",
+          "type": "ref",
+          "required": true,
+          "ref": "shipments",
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "claimed",
+          "label": "申报运费",
+          "type": "money",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": "0.01",
+          "max": "999999999"
+        },
+        {
+          "key": "invoiceNo",
+          "label": "账单号码",
+          "type": "text",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        }
+      ],
+      "actions": [
+        {
+          "key": "audit",
+          "label": "运价核验",
+          "from": [
+            "DRAFT"
+          ],
+          "to": "MATCHED",
+          "role": "OPERATOR",
+          "separate": false,
+          "fields": []
+        },
+        {
+          "key": "adjust",
+          "label": "登记承运商贷项",
+          "from": [
+            "DISPUTED"
+          ],
+          "to": "MATCHED",
+          "role": "OPERATOR",
+          "separate": false,
+          "fields": [
+            {
+              "key": "credit",
+              "label": "贷项金额",
+              "type": "money",
+              "required": true,
+              "ref": null,
+              "options": [],
+              "min": "0.01",
+              "max": "999999999"
+            },
+            {
+              "key": "creditNote",
+              "label": "贷项凭证",
+              "type": "text",
+              "required": true,
+              "ref": null,
+              "options": [],
+              "min": null,
+              "max": null
+            }
+          ]
+        },
+        {
+          "key": "approve",
+          "label": "审批应付",
+          "from": [
+            "MATCHED"
+          ],
+          "to": "APPROVED",
+          "role": "REVIEWER",
+          "separate": true,
+          "fields": []
+        },
+        {
+          "key": "pay",
+          "label": "核销付款",
+          "from": [
+            "APPROVED"
+          ],
+          "to": "PAID",
+          "role": "REVIEWER",
+          "separate": true,
+          "fields": [
+            {
+              "key": "reference",
+              "label": "付款凭证号",
+              "type": "text",
+              "required": true,
+              "ref": null,
+              "options": [],
+              "min": null,
+              "max": null
+            }
+          ]
+        },
+        {
+          "key": "correct",
+          "label": "更正账单重审",
+          "from": [
+            "DISPUTED"
+          ],
+          "to": "DRAFT",
+          "role": "OPERATOR",
+          "separate": false,
+          "fields": [
+            {
+              "key": "claimed",
+              "label": "更正申报金额",
+              "type": "money",
+              "required": true,
+              "ref": null,
+              "options": [],
+              "min": "0.01",
+              "max": "999999999"
+            },
+            {
+              "key": "reason",
+              "label": "更正依据",
+              "type": "text",
+              "required": true,
+              "ref": null,
+              "options": [],
+              "min": null,
+              "max": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "payments",
+      "label": "运费付款流水",
+      "description": "已审批账单付款与价卡快照",
+      "initial": "POSTED",
+      "editable": false,
+      "creatable": false,
+      "fields": [
+        {
+          "key": "invoice",
+          "label": "运费账单",
+          "type": "ref",
+          "required": true,
+          "ref": "invoices",
+          "options": [],
+          "min": null,
+          "max": null
+        },
+        {
+          "key": "amount",
+          "label": "实付金额",
+          "type": "money",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": "0",
+          "max": "999999999"
+        },
+        {
+          "key": "reference",
+          "label": "付款凭证",
+          "type": "text",
+          "required": true,
+          "ref": null,
+          "options": [],
+          "min": null,
+          "max": null
+        }
+      ],
+      "actions": []
+    }
+  ]
+}

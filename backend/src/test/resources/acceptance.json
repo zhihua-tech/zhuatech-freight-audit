@@ -1,0 +1,272 @@
+[
+  {
+    "op": "create",
+    "as": "carrier",
+    "module": "carriers",
+    "data": {
+      "name": "华东物流承运商",
+      "contact": "对账经理（演示）"
+    }
+  },
+  {
+    "op": "create",
+    "as": "tariff",
+    "module": "tariffs",
+    "data": {
+      "carrier": "$carrier.id",
+      "lane": "SH-SZ",
+      "start": "$today-2",
+      "end": "$today+30",
+      "base": 20,
+      "perKg": 2,
+      "fuelRate": 10,
+      "tolerance": 1
+    }
+  },
+  {
+    "op": "action",
+    "target": "tariff",
+    "action": "approve",
+    "data": {},
+    "role": "reviewer"
+  },
+  {
+    "op": "create",
+    "as": "overlap",
+    "module": "tariffs",
+    "data": {
+      "carrier": "$carrier.id",
+      "lane": "SH-SZ",
+      "start": "$today",
+      "end": "$today+30",
+      "base": 30,
+      "perKg": 2,
+      "fuelRate": 5,
+      "tolerance": 0
+    }
+  },
+  {
+    "op": "action",
+    "target": "overlap",
+    "action": "approve",
+    "data": {},
+    "role": "reviewer",
+    "error": 409
+  },
+  {
+    "op": "create",
+    "as": "shipment",
+    "module": "shipments",
+    "data": {
+      "carrier": "$carrier.id",
+      "lane": "SH-SZ",
+      "weight": 100,
+      "shippedAt": "$today",
+      "consignee": "深圳采购中心"
+    }
+  },
+  {
+    "op": "create",
+    "as": "invoice",
+    "module": "invoices",
+    "data": {
+      "shipment": "$shipment.id",
+      "claimed": 260,
+      "invoiceNo": "FREIGHT-001"
+    }
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "audit",
+    "data": {},
+    "error": 409
+  },
+  {
+    "op": "action",
+    "target": "shipment",
+    "action": "dispatch",
+    "data": {}
+  },
+  {
+    "op": "action",
+    "target": "shipment",
+    "action": "deliver",
+    "data": {
+      "pod": "POD-001"
+    }
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "audit",
+    "data": {}
+  },
+  {
+    "op": "check",
+    "target": "invoice",
+    "expect": {
+      "state": "DISPUTED",
+      "data.expected": 242,
+      "data.difference": 18
+    }
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "approve",
+    "data": {},
+    "role": "reviewer",
+    "error": 409
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "adjust",
+    "data": {
+      "credit": 10,
+      "creditNote": "CN-BAD"
+    },
+    "error": 409
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "adjust",
+    "data": {
+      "credit": 18,
+      "creditNote": "CN-001"
+    }
+  },
+  {
+    "op": "check",
+    "target": "invoice",
+    "expect": {
+      "state": "MATCHED",
+      "data.payable": 242
+    }
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "approve",
+    "data": {},
+    "role": "reviewer"
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "pay",
+    "data": {
+      "reference": "FRT-PAY-001"
+    },
+    "role": "reviewer"
+  },
+  {
+    "op": "check",
+    "target": "invoice",
+    "expect": {
+      "state": "PAID"
+    }
+  },
+  {
+    "op": "count",
+    "module": "payments",
+    "count": 1,
+    "where": {}
+  },
+  {
+    "op": "action",
+    "target": "invoice",
+    "action": "pay",
+    "data": {
+      "reference": "FRT-PAY-002"
+    },
+    "role": "reviewer",
+    "error": 409
+  },
+  {
+    "op": "create",
+    "as": "duplicate",
+    "module": "invoices",
+    "data": {
+      "shipment": "$shipment.id",
+      "claimed": 242,
+      "invoiceNo": "FREIGHT-002"
+    },
+    "error": 409
+  },
+  {
+    "op": "create",
+    "as": "lowShipment",
+    "module": "shipments",
+    "data": {
+      "carrier": "$carrier.id",
+      "lane": "SH-SZ",
+      "weight": 100,
+      "shippedAt": "$today",
+      "consignee": "上海仓储中心"
+    }
+  },
+  {
+    "op": "action",
+    "target": "lowShipment",
+    "action": "dispatch",
+    "data": {}
+  },
+  {
+    "op": "action",
+    "target": "lowShipment",
+    "action": "deliver",
+    "data": {
+      "pod": "POD-LOW"
+    }
+  },
+  {
+    "op": "create",
+    "as": "lowInvoice",
+    "module": "invoices",
+    "data": {
+      "shipment": "$lowShipment.id",
+      "claimed": 200,
+      "invoiceNo": "LOW-INVOICE"
+    }
+  },
+  {
+    "op": "action",
+    "target": "lowInvoice",
+    "action": "audit",
+    "data": {}
+  },
+  {
+    "op": "check",
+    "target": "lowInvoice",
+    "expect": {
+      "state": "DISPUTED",
+      "data.difference": -42
+    }
+  },
+  {
+    "op": "action",
+    "target": "lowInvoice",
+    "action": "correct",
+    "data": {
+      "claimed": 242,
+      "reason": "承运商更正漏报重量费"
+    }
+  },
+  {
+    "op": "action",
+    "target": "lowInvoice",
+    "action": "audit",
+    "data": {}
+  },
+  {
+    "op": "check",
+    "target": "lowInvoice",
+    "expect": {
+      "state": "MATCHED",
+      "data.difference": 0
+    }
+  }
+]
